@@ -13,7 +13,7 @@
             <StackPanel Orientation="Vertical">
                 <!--<TextBlock Margin="20,10,150,10" HorizontalAlignment="Left" Text="Settings" Width="130"/>-->
 
-                <Image Source="Resources\Package.ico" Height="60" Margin="272,0,10,0"/>
+                <Image Source="mbrace.ico" Height="60" Margin="272,0,10,0"/>
                 <!--<TextBlock Margin="20,10,150,10" HorizontalAlignment="Left" Text="Settings" Width="130"/>-->
 
                 <StackPanel Height="139" Margin="30,0,10,30" >

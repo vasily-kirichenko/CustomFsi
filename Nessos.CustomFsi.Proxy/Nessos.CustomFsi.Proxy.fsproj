@@ -8,7 +8,7 @@
     <ProjectGuid>a865bde6-00a5-4b24-8980-224227e6e4ed</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>Nessos.CustomFsi.Proxy</RootNamespace>
-    <AssemblyName>FsiProxy</AssemblyName>
+    <AssemblyName>CustomFsi.Proxy</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFSharpCoreVersion>4.3.1.0</TargetFSharpCoreVersion>

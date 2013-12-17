@@ -70,6 +70,11 @@
       <Project>{a865bde6-00a5-4b24-8980-224227e6e4ed}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <ProjectReference Include="..\Nessos.CustomFsi.Standalone\Nessos.CustomFsi.Standalone.csproj">
+      <Name>Nessos.CustomFsi.Standalone</Name>
+      <Project>{b999df80-d2b5-4482-b2a7-9f908971bcfc}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\Nessos.CustomFsi.VsPlugin\Nessos.CustomFsi.VsPlugin.csproj">
       <Name>Nessos.CustomFsi.VsPlugin</Name>
       <Project>{b8530802-e17b-4832-8f47-3e1ed6261516}</Project>

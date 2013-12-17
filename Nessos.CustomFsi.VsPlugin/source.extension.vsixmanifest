@@ -2,7 +2,7 @@
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
     <Identity Id="adff2b7c-9847-421c-9598-b378536cc3c4" Version="1.0" Language="en-US" Publisher="Nessos" />
-    <DisplayName>Nessos.CustomFsi.VsPlugin</DisplayName>
+    <DisplayName>CustomFsi</DisplayName>
     <Description>Enables Visual Studio redirection to custom F# interactive instances.</Description>
   </Metadata>
   <Installation InstalledByMsi="false">

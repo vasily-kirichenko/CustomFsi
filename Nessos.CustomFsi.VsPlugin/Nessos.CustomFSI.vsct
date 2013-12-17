@@ -59,9 +59,9 @@
 
       <Button guid="guidNessos_CustomFSICmdSet" id="CustomFSI" priority="0x0100" type="Button">
         <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1"/>
-        <Icon guid="guidImages" id="bmpPic2" />
+        <Icon guid="guidImages" id="bmpPic1" />
         <Strings>
-          <ButtonText>CustomFSI</ButtonText>
+          <ButtonText>CustomFsi</ButtonText>
         </Strings>
       </Button>
 

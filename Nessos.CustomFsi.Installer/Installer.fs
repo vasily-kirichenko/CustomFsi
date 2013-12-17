@@ -149,8 +149,8 @@
     let main args =
 
         let thisDirectory = System.Reflection.Assembly.GetEntryAssembly().Location |> Path.GetDirectoryName
-        let fsiProxy = Path.Combine(thisDirectory, "FsiProxy.exe")
-        let vsix = Path.Combine(thisDirectory, "CustomFSI.vsix")
+        let fsiProxy = Path.Combine(thisDirectory, "CustomFsi.Proxy.exe")
+        let vsix = Path.Combine(thisDirectory, "CustomFsi.VsPlugin.vsix")
 
         let installOrUninstall = parseMode args
 
