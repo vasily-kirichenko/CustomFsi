@@ -36,6 +36,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DocumentationFile>bin\Release\Nessos.CustomFsi.Installer.XML</DocumentationFile>
     <Prefer32Bit>true</Prefer32Bit>
+    <OtherFlags>--win32manifest:manifest.xml</OtherFlags>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
@@ -61,6 +62,8 @@
     <Content Include="README.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="App.config" />
+    <Content Include="manifest.xml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nessos.CustomFsi.Proxy\Nessos.CustomFsi.Proxy.fsproj">

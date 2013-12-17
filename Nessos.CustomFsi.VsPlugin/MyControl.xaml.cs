@@ -24,20 +24,16 @@ namespace Nessos.CustomFsi.VsPlugin
     /// </summary>
     public partial class MyControl : UserControl
     {
-        //public MyControl(ToolWindowPane parent)
-        //{
-        //    ParentPane = parent;
-        //    InitializeComponent();
-
-        //    // Apply
-        //    this.SetRegistryValues();
-        //}
-        public MyControl()
+        public MyControl(ToolWindowPane parent)
         {
+            ParentPane = parent;
             InitializeComponent();
+
+            // Apply
+            this.SetRegistryValues();
         }
 
-        //private ToolWindowPane ParentPane;
+        private ToolWindowPane ParentPane;
 
         private void SetRegistryValues()
         {
@@ -45,19 +41,18 @@ namespace Nessos.CustomFsi.VsPlugin
             this.FsiEnabled.IsChecked = RegistryResolver.PluginEnabled;
         }
 
-        //private void close()
-        //{
-        //    IVsWindowFrame windowFrame = (IVsWindowFrame)this.ParentPane.Frame;
-        //    windowFrame.CloseFrame((uint)__FRAMECLOSE.FRAMECLOSE_NoSave);
-        //}
-
+        private void close()
+        {
+            IVsWindowFrame windowFrame = (IVsWindowFrame)this.ParentPane.Frame;
+            windowFrame.CloseFrame((uint)__FRAMECLOSE.FRAMECLOSE_NoSave);
+        }
 
         private void commit(object sender, RoutedEventArgs e)
         {
             // apply changes
             RegistryResolver.SetConfig((bool)this.FsiEnabled.IsChecked, this.FsiPath.Text);
 
-            //close();
+            close();
         }
 
         private void cancel(object sender, RoutedEventArgs e)
@@ -65,7 +60,7 @@ namespace Nessos.CustomFsi.VsPlugin
             // revert changes
             this.SetRegistryValues();
 
-            //close();
+            close();
         }
 
         private void browse(object sender, RoutedEventArgs e)
