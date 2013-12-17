@@ -70,6 +70,11 @@
       <Project>{a865bde6-00a5-4b24-8980-224227e6e4ed}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <ProjectReference Include="..\Nessos.CustomFsi.VsPlugin\Nessos.CustomFsi.VsPlugin.csproj">
+      <Name>Nessos.CustomFsi.VsPlugin</Name>
+      <Project>{b8530802-e17b-4832-8f47-3e1ed6261516}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <Private>True</Private>
@@ -84,7 +89,10 @@
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
-    <PostBuildEvent>copy "$(TargetDir)*.exe" "$(ProjectDir)..\$(ConfigurationName)\"
+    <PostBuildEvent>rd /q /s "$(ProjectDir)..\$(ConfigurationName)\"
+md "$(ProjectDir)..\$(ConfigurationName)\"
+copy "$(ProjectDir)..\Nessos.CustomFsi.VsPlugin\$(OutDir)*.vsix" "$(ProjectDir)..\$(ConfigurationName)"
+copy "$(TargetDir)*.exe" "$(ProjectDir)..\$(ConfigurationName)\"
 copy "$(TargetDir)*.dll" "$(ProjectDir)..\$(ConfigurationName)\"
 copy "$(TargetDir)*.txt" "$(ProjectDir)..\$(ConfigurationName)\"
 copy "$(TargetDir)*.bat" "$(ProjectDir)..\$(ConfigurationName)\"</PostBuildEvent>
