@@ -80,7 +80,6 @@
                 eprintfn "Error: %s" e.Message
                 exitWait 10)
 
-//    [<PrincipalPermission(SecurityAction.Demand, Role = @"Admin")>]
     let install (fsiProxyPath : string) =
         if not <| File.Exists fsiProxyPath then
             failwithf "Missing file %s" fsiProxyPath
@@ -103,7 +102,6 @@
             do! copy (fsiProxyPath, ! "FsiAnyCPU.exe")
         } |> Reversible.run
 
-//    [<PrincipalPermission(SecurityAction.Demand, Role = @"Administrator")>]
     let uninstall () =
         let _ = fsiPath.Force()
 
@@ -150,7 +148,7 @@
 
         let thisDirectory = System.Reflection.Assembly.GetEntryAssembly().Location |> Path.GetDirectoryName
         let fsiProxy = Path.Combine(thisDirectory, "CustomFsi.Proxy.exe")
-        let vsix = Path.Combine(thisDirectory, "CustomFsi.VsPlugin.vsix")
+        let vsix = Path.Combine(thisDirectory, "CustomFsi.vsix")
 
         let installOrUninstall = parseMode args
 
@@ -166,7 +164,7 @@
                     exitWait 3
 
                 if not <| File.Exists vsix then
-                    eprintfn "Error: VsPlugin.vsix not found."
+                    eprintfn "Error: CustomFsi.vsix not found."
                     exitWait 3
 
                 printfn "Installing F# interactive proxy..." ; install fsiProxy
