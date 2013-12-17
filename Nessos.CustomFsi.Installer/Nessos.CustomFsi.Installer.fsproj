@@ -62,7 +62,6 @@
     <Content Include="README.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Include="App.config" />
     <Content Include="manifest.xml" />
   </ItemGroup>
   <ItemGroup>
