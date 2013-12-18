@@ -52,8 +52,10 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="Utils.fs" />
+    <Compile Include="Registry.fs" />
     <Compile Include="Reversible.fs" />
-    <Compile Include="RegistryResolver.fs" />
+    <Compile Include="SetttingsResolver.fs" />
+    <None Include="Script1.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

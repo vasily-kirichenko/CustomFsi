@@ -13,7 +13,10 @@
     module internal Utils =
 
         let thisExecutable = lazy(System.Reflection.Assembly.GetExecutingAssembly().Location)
-        let defaultExe = lazy(if RegistryResolver.FsiAnyCpu then "Fsi64.exe" else "Fsi32.exe")
+        let settings = lazy(
+            let dir = Path.GetDirectoryName thisExecutable.Value
+            SettingsResolver.OfFSharpCompilerPath(dir))
+        let defaultExe = lazy(if settings.Value.IsFsiAnyCpu then "Fsi64.exe" else "Fsi32.exe")
 
         let assertCustomExecutable (path : string) =
             let errorPrint reason code =
@@ -44,8 +47,8 @@
         let resolveFsiPath () =
             let registryPath () =
                 option {
-                    if RegistryResolver.PluginEnabled then
-                        match RegistryResolver.CustomFsiPath with
+                    if settings.Value.CustomFsiEnabled then
+                        match settings.Value.CustomFsiPath with
                         | null | "" -> return! None
                         | path ->
                             do assertCustomExecutable path
@@ -55,7 +58,7 @@
             let defaultPath () =
                 let defaultExe =
                     option {
-                        let! compilerDir = denull RegistryResolver.FsCompilerPath
+                        let! compilerDir = denull settings.Value.FSharpCompilerPath
                         let file = Path.Combine(compilerDir, defaultExe.Value)
 
                         if File.Exists file then return file

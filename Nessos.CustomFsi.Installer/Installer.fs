@@ -14,14 +14,16 @@
         let fsi32 = "Fsi32.exe"
         let fsi64 = "Fsi64.exe"
 
+        let resolver = SettingsResolver.OfSettingsId("VS2013")
+
         let fsiPath = lazy(
-            match RegistryResolver.FsCompilerPath with
+            match resolver.FSharpCompilerPath with
             | null -> failwith "Could not resolve F# interactive path."
             | path when not <| Directory.Exists path -> failwith "F# interactive path does not exist."
             | path -> path)
 
         let vsixInstaller = lazy(
-            match RegistryResolver.VsDir with
+            match resolver.VisualStudioPath with
             | null -> None
             | vsDir ->
                 let vsixInst = Path.Combine(vsDir, "VSIXInstaller.exe")
@@ -183,7 +185,7 @@
                     eprintfn "Could not locate Visual Studio 2013, will not install plugin."
                 | Some installer ->
                     printfn "Uninstalling Visual Studio Plugin..."
-                    unInstallVsPlugin installer RegistryResolver.AppGuid
+                    unInstallVsPlugin installer resolver.AppGuid
 
         with e -> eprintfn "Error: %s" e.Message ; exitWait 2
 

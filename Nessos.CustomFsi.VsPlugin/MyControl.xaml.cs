@@ -30,15 +30,17 @@ namespace Nessos.CustomFsi.VsPlugin
             InitializeComponent();
 
             // Apply
+            this.Settings = SettingsResolver.OfSettingsId("VS2013");
             this.SetRegistryValues();
         }
 
         private ToolWindowPane ParentPane;
+        private SettingsResolver Settings;
 
         private void SetRegistryValues()
         {
-            this.FsiPath.Text = RegistryResolver.CustomFsiPath;
-            this.FsiEnabled.IsChecked = RegistryResolver.PluginEnabled;
+            this.FsiPath.Text = this.Settings.CustomFsiPath;
+            this.FsiEnabled.IsChecked = this.Settings.CustomFsiEnabled;
         }
 
         private void close()
@@ -50,7 +52,7 @@ namespace Nessos.CustomFsi.VsPlugin
         private void commit(object sender, RoutedEventArgs e)
         {
             // apply changes
-            RegistryResolver.SetConfig((bool)this.FsiEnabled.IsChecked, this.FsiPath.Text);
+            this.Settings.SetConfig((bool)this.FsiEnabled.IsChecked, this.FsiPath.Text);
 
             close();
         }

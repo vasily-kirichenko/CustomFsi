@@ -60,3 +60,32 @@ module Utils =
         do Async.Start(loop (), cts.Token)
 
         interface IDisposable with member __.Dispose() = cts.Cancel()
+
+
+    // primitive parser
+
+    let private parsers =
+        let inline dc (f : string -> 'T) = (typeof<'T>, f :> obj)
+        [
+            dc System.Boolean.Parse
+            dc int32
+            dc float
+            dc float
+            dc int64
+            dc int16
+            dc uint16
+            dc uint32
+            dc uint64
+            dc sbyte
+            dc decimal
+            dc System.DateTime.Parse
+            dc System.Guid.Parse
+            dc id
+        ] 
+        |> Seq.map(fun (t,p) -> t.MetadataToken, p)
+        |> Map.ofSeq
+
+    let tryGetParser<'T> = 
+        let inline uc (x : obj) = x :?> 'T
+        parsers.TryFind typeof<'T>.MetadataToken
+        |> Option.map (fun p -> p :?> string -> 'T)
