@@ -25,7 +25,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DocumentationFile>bin\Debug\Nessos.CustomFsi.Proxy.XML</DocumentationFile>
     <Prefer32Bit>true</Prefer32Bit>
-    <OtherFlags>--keyfile:"../Nessos.CustomFsi.VsPlugin/Key.snk" --staticlink:Nessos.CustomFsi.Lib</OtherFlags>
+    <OtherFlags>--keyfile:"../Nessos.CustomFsi.Vs2013/Key.snk" --staticlink:Nessos.CustomFsi.Lib</OtherFlags>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -37,7 +37,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DocumentationFile>bin\Release\Nessos.CustomFsi.Proxy.XML</DocumentationFile>
     <Prefer32Bit>true</Prefer32Bit>
-    <OtherFlags>--keyfile:"../Nessos.CustomFsi.VsPlugin/Key.snk" --staticlink:Nessos.CustomFsi.Lib</OtherFlags>
+    <OtherFlags>--keyfile:"../Common/Key.snk" --staticlink:Nessos.CustomFsi.Lib</OtherFlags>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
@@ -56,7 +56,7 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
-    <Compile Include="Program.fs" />
+    <Compile Include="Proxy.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

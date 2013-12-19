@@ -73,9 +73,9 @@
     <None Include="Key.snk" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Nessos.CustomFsi.VsPlugin.csproj">
+    <ProjectReference Include="..\Nessos.CustomFsi.Vs2013.csproj">
       <Project>{B8530802-E17B-4832-8F47-3E1ED6261516}</Project>
-      <Name>Nessos.CustomFsi.VsPlugin</Name>
+      <Name>Nessos.CustomFsi.Vs2013</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

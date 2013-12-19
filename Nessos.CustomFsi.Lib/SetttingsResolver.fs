@@ -1,19 +1,20 @@
 ﻿namespace Nessos.CustomFsi.Lib
 
+    open System.IO
+
     open Microsoft.Win32
     open Nessos.CustomFsi.Lib.Registry
 
     [<AutoOpen>]
     module internal Resources =
 
-        let customFsiKey = FsRegistry.DefineKey(RegistryHive.CurrentUser, RegistryView.Default, ["Software";"Nessos";"CustomFsi"])
-        let customFsiEnabled = customFsiKey.GetField<bool>("Enabled")
-        let customFsiPath = customFsiKey.GetField<string>("Path")        
+        let customFsiKey = FsRegistry.DefineKey(RegistryHive.CurrentUser, RegistryView.Default, ["Software";"Nessos";"CustomFsi"]) 
 
         type VisualStudioKeys =
             {
                 Id : string
                 PluginGuid : string
+                VsixFile : string
 
                 // Visual Studio Registry Info
 
@@ -24,6 +25,11 @@
                 // F# compiler registry info
 
                 FSharpPath : FsRegistryField<string>
+
+                // Plugin Settings
+
+                PluginEnabled : FsRegistryField<bool>
+                CustomPath : FsRegistryField<string>
             }
 
         // F# 3.1 / VS 2013 settings
@@ -34,15 +40,20 @@
             let vsKeyLM = FsRegistry.DefineKey(RegistryHive.LocalMachine, RegistryView.Registry32, vsPath)
             let fsKey = FsRegistry.DefineKey(RegistryHive.LocalMachine, RegistryView.Registry32, fsPath)
             let fsiPrefsKey = vsKey.GetSubKey ["DialogPage";"Microsoft.VisualStudio.FSharp.Interactive.FsiPropertyPage"]
+            let pluginKey = customFsiKey.GetSubKey "VS2013"
             {
                 Id = "VS2013"
                 PluginGuid = "adff2b7c-9847-421c-9598-b378536cc3c4"
+                VsixFile = "CustomFsi.Vs2013.vsix"
 
                 VisualStudioPath = vsKeyLM.GetField("InstallDir")
                 VisualStudioFsiPrefer64 = fsiPrefsKey.GetField("FsiPreferAnyCPUVersion")
                 VisualStudioFsiParam = fsiPrefsKey.GetField("FsiCommandLineArgs")
 
                 FSharpPath = fsKey.GetField()
+
+                PluginEnabled = pluginKey.GetField("Enabled")
+                CustomPath = pluginKey.GetField("Path")
             }
 
         // F# 3.0 / VS 2012 settings
@@ -53,15 +64,20 @@
             let vsKeyLM = FsRegistry.DefineKey(RegistryHive.LocalMachine, RegistryView.Registry32, vsPath)
             let fsKey = FsRegistry.DefineKey(RegistryHive.LocalMachine, RegistryView.Registry32, fsPath)
             let fsiPrefsKey = vsKey.GetSubKey ["DialogPage";"Microsoft.VisualStudio.FSharp.Interactive.FsiPropertyPage"]
+            let pluginKey = customFsiKey.GetSubKey "VS2012"
             {
                 Id = "VS2012"
                 PluginGuid = "9cf2e4d2-fa2e-4e55-9af0-185783ea2dc7"
+                VsixFile = "CustomFsi.Vs2012.vsix"
 
                 VisualStudioPath = vsKeyLM.GetField("InstallDir")
                 VisualStudioFsiPrefer64 = fsiPrefsKey.GetField("FsiPreferAnyCPUVersion")
                 VisualStudioFsiParam = fsiPrefsKey.GetField("FsiCommandLineArgs")
 
                 FSharpPath = fsKey.GetField()
+
+                PluginEnabled = pluginKey.GetField("Enabled")
+                CustomPath = pluginKey.GetField("Path")
             }
 
         let settings = [vs2012 ; vs2013]
@@ -70,8 +86,10 @@
             settings |> List.tryFind (fun s -> s.Id = id)
 
         let tryGetSettingsByCompilerPath (path : string) =
+            let normalizePath (path : string) = Path.GetFullPath(path).TrimEnd([|'\\'|])
+                
             settings 
-            |> List.tryFind(fun s -> FsRegistry.TryGetValue s.FSharpPath |> Option.exists(fun p -> p = path))
+            |> List.tryFind(fun s -> FsRegistry.TryGetValue s.FSharpPath |> Option.exists(fun p -> normalizePath path = normalizePath p))
 
         let pickMostSuitableConfiguration () =
             settings
@@ -99,13 +117,15 @@
                 new SettingsResolver(s)
 
         member __.SetConfig(enabled : bool, path : string) =
-            FsRegistry.SetValue(customFsiEnabled, enabled, overwrite = true)
-            FsRegistry.SetValue(customFsiPath, path, overwrite = true)
+            FsRegistry.SetValue(settings.PluginEnabled, enabled, overwrite = true)
+            FsRegistry.SetValue(settings.CustomPath, path, overwrite = true)
 
-        member __.CustomFsiPath = customFsiPath |> evaluate |> defaultArg ""
-        member __.CustomFsiEnabled = customFsiEnabled |> evaluate |> defaultArg false
+        member __.CustomFsiPath = settings.CustomPath |> evaluate |> defaultArg ""
+        member __.CustomFsiEnabled = settings.PluginEnabled |> evaluate |> defaultArg false
         member __.FSharpCompilerPath = settings.FSharpPath |> evaluate |> valueOrFail "Could not resolve path for F# compiler."
         member __.IsFsiAnyCpu = settings.VisualStudioFsiPrefer64 |> evaluate |> defaultArg false
         member __.FsiParams = settings.VisualStudioFsiParam |> evaluate |> defaultArg ""
         member __.VisualStudioPath = settings.VisualStudioPath |> evaluate |> valueOrFail "Could not resolve path for Visual Studio."
+        
         member __.AppGuid = settings.PluginGuid
+        member __.VsixFile = settings.VsixFile

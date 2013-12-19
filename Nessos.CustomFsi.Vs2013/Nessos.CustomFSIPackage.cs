@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 
-namespace Nessos.CustomFsi.VsPlugin
+namespace Nessos.CustomFsi.Vs2013
 {
     /// <summary>
     /// This is the class that implements the package exposed by this assembly.

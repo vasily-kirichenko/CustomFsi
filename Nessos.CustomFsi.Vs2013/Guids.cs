@@ -2,7 +2,7 @@
 // MUST match guids.h
 using System;
 
-namespace Nessos.CustomFsi.VsPlugin
+namespace Nessos.CustomFsi.Vs2013
 {
     static class GuidList
     {

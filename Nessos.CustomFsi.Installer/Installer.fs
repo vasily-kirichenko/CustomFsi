@@ -2,6 +2,7 @@
 
     open System.IO
     open System.Diagnostics
+    open System.Threading
     open System.Security
     open System.Security.Permissions
     open System.Security.Principal
@@ -9,57 +10,7 @@
     open Nessos.CustomFsi.Lib
 
     [<AutoOpen>]
-    module internal Common =
-
-        let fsi32 = "Fsi32.exe"
-        let fsi64 = "Fsi64.exe"
-
-        let resolver = SettingsResolver.OfSettingsId("VS2013")
-
-        let fsiPath = lazy(
-            match resolver.FSharpCompilerPath with
-            | null -> failwith "Could not resolve F# interactive path."
-            | path when not <| Directory.Exists path -> failwith "F# interactive path does not exist."
-            | path -> path)
-
-        let vsixInstaller = lazy(
-            match resolver.VisualStudioPath with
-            | null -> None
-            | vsDir ->
-                let vsixInst = Path.Combine(vsDir, "VSIXInstaller.exe")
-                if File.Exists vsixInst then Some vsixInst
-                else None)
-
-        let (!) fileName = Path.Combine(fsiPath.Value, fileName)
-
-        // recoverable file system operations
-        let move (src : string, dst : string) =
-            Reversible.ofPrimitive (fun () -> File.Move(src, dst))
-                                    (fun () -> File.Move(dst, src)) id
-
-        let copy (src : string, dst : string) =
-            Reversible.ofPrimitive (fun () -> File.Copy(src, dst))
-                                    (fun () -> File.Delete dst) id
-
-        let delete (file : string) =
-            let tmp = Path.GetTempFileName()
-            Reversible.ofPrimitive (fun () ->   
-                                        File.Copy(file, tmp, true); 
-                                        try File.Delete file 
-                                        with _ -> failwith "Cannot uninstall; fsi sessions appear to be running.")
-                                    (fun () -> File.Copy(tmp, file))
-                                    (fun () -> File.Delete tmp)
-            
-
-        // checks if the proxy is installed
-        let isInstalled () =
-            let status = 
-                [ ! fsi32 ; ! fsi32 + ".config" ; ! fsi64 ; !fsi64 + ".config" ]
-                |> List.map File.Exists
-
-            if List.forall id status then true
-            elif List.exists id status then failwith "F# interactive folder is corrupt; will not continue."
-            else false
+    module internal Utils =
 
         let exitWait n =
             if isWindowedConsole then
@@ -82,54 +33,139 @@
                 eprintfn "Error: %s" e.Message
                 exitWait 10)
 
-    let install (fsiProxyPath : string) =
-        if not <| File.Exists fsiProxyPath then
-            failwithf "Missing file %s" fsiProxyPath
 
-        let _ = fsiPath.Force()
+    [<AutoOpen>]
+    module internal Installers =
 
-        do checkForWritePermissions fsiPath.Value
+        let fsi32 = "Fsi32.exe"
+        let fsi64 = "Fsi64.exe"
 
-        if isInstalled () then failwith "F# interactive proxy appears to have already been installed."
+        // recoverable file system operations
+        let move (src : string, dst : string) =
+            Reversible.ofPrimitive (fun () -> File.Move(src, dst))
+                                    (fun () -> File.Move(dst, src)) id
 
-        reversible {
-            // move Fsi.exe and FsiAnyCPU.exe to new locations  
-            do! move (! "Fsi.exe", ! fsi32)
-            do! move (! "Fsi.exe.config", ! fsi32 + ".config")
-            do! move (! "FsiAnyCPU.exe", ! fsi64)
-            do! move (! "FsiAnyCPU.exe.config", ! fsi64 + ".config")
+        let copy (src : string, dst : string) =
+            Reversible.ofPrimitive (fun () -> File.Copy(src, dst))
+                                    (fun () -> File.Delete dst) id
 
-            // install FsiProxy.exe
-            do! copy (fsiProxyPath, ! "Fsi.exe")
-            do! copy (fsiProxyPath, ! "FsiAnyCPU.exe")
-        } |> Reversible.run
+        let delete (file : string) =
+            let tmp = Path.GetTempFileName()
+            Reversible.ofPrimitive (fun () ->   
+                                        File.Copy(file, tmp, true); 
+                                        try File.Delete file 
+                                        with _ -> failwith "Cannot uninstall; fsi sessions appear to be running.")
+                                    (fun () -> File.Copy(tmp, file))
+                                    (fun () -> File.Delete tmp)
 
-    let uninstall () =
-        let _ = fsiPath.Force()
+        let resolveCompilerPath (settings : SettingsResolver) =
+            match settings.FSharpCompilerPath with
+            | null -> failwith "Could not resolve F# interactive path."
+            | path when not <| Directory.Exists path -> failwith "F# interactive path does not exist."
+            | path -> path
 
-        do checkForWritePermissions fsiPath.Value
+        let isInstalled (fsiPath : string) =
+            let inline (!) file = Path.Combine(fsiPath, file)
+            let status = 
+                [ ! fsi32 ; ! fsi32 + ".config" ; ! fsi64 ; ! fsi64 + ".config" ]
+                |> List.map File.Exists
 
-        if not <| isInstalled () then failwith "F# interactive proxy appears to have not been installed."
+            if List.forall id status then true
+            elif List.exists id status then failwith "F# interactive folder is corrupt; will not continue."
+            else false
 
-        reversible {
-            do! delete (! "Fsi.exe")
-            do! delete (! "FsiAnyCPU.exe")
+        let resolveVsixInstaller (settings : SettingsResolver) =
+            let vsDir = settings.VisualStudioPath    
+            let vsixInst = Path.Combine(vsDir, "VSIXInstaller.exe")
+            if File.Exists vsixInst then vsixInst
+            else
+                failwith "Could not locate VSIX installer."
+
+        let installVsPlugin vsixInstaller vsixFile =
+            let proc = Process.Start(vsixInstaller, "/admin " + "\"" + vsixFile + "\"")
+            while not proc.HasExited do Thread.Sleep(200)
+            if proc.ExitCode <> 0 then
+                failwith "Vsix installation failed."
+
+        let unInstallVsPlugin vsixInstaller appGuid =
+            let proc = Process.Start(vsixInstaller, "/admin " + "\"/u:" + appGuid + "\"")
+            while not proc.HasExited do Thread.Sleep(200)
+            if proc.ExitCode <> 0 then
+                failwith "Vsix uninstallation failed."
+
+        let install (sourceDir : string) (settings : SettingsResolver) =
+
+            // preparation
+            let fsiProxyPath = Path.Combine(sourceDir, "CustomFsi.Proxy.exe")
+            let vsix = Path.Combine(sourceDir, settings.VsixFile)
+            let vsixInstaller = resolveVsixInstaller settings
+
+            if not <| File.Exists fsiProxyPath then
+                failwithf "Missing file %s" fsiProxyPath
+
+            if not <| File.Exists vsix then
+                failwithf "Missing file %s" vsix
+
+            let fsiPath = resolveCompilerPath settings
+
+            if isInstalled fsiPath then failwith "F# interactive proxy appears to have already been installed."
+
+            do checkForWritePermissions fsiPath
+
+            let inline (!) fileName = Path.Combine(fsiPath, fileName)
+
+            // installation workflow
+
+            reversible {
+                printfn "Installing F# interactive proxy..."
+
+                // move Fsi.exe and FsiAnyCPU.exe to new locations  
+                do! move (! "Fsi.exe", ! fsi32)
+                do! move (! "Fsi.exe.config", ! fsi32 + ".config")
+                do! move (! "FsiAnyCPU.exe", ! fsi64)
+                do! move (! "FsiAnyCPU.exe.config", ! fsi64 + ".config")
+
+                // install FsiProxy.exe
+                do! copy (fsiProxyPath, ! "Fsi.exe")
+                do! copy (fsiProxyPath, ! "FsiAnyCPU.exe")
+
+                printfn "Installing Visual Studio Plugin..."
+
+                // install the plugin
+                do installVsPlugin vsixInstaller vsix
+            } |> Reversible.run
+
+        let uninstall (settings : SettingsResolver) =
+            let fsiPath = resolveCompilerPath settings
+            let vsixInstaller = resolveVsixInstaller settings
+            let appGuid = settings.AppGuid
+
+            if not <| isInstalled fsiPath then failwith "F# interactive proxy appears to have not been installed."
+
+            do checkForWritePermissions fsiPath
+
+            let inline (!) fileName = Path.Combine(fsiPath, fileName)
+
+            reversible {
+
+                printfn "Removing F# interactive proxy..."
+                
+                // remove proxy
+                do! delete (! "Fsi.exe")
+                do! delete (! "FsiAnyCPU.exe")
             
-            do! move (! fsi32, ! "Fsi.exe")
-            do! move (! fsi32 + ".config", ! "Fsi.exe.config")
-            do! move (! fsi64, ! "FsiAnyCPU.exe")
-            do! move (! fsi64 + ".config", ! "FsiAnyCPU.exe.config")
-        } |> Reversible.run
+                // put back original configurations
+                do! move (! fsi32, ! "Fsi.exe")
+                do! move (! fsi32 + ".config", ! "Fsi.exe.config")
+                do! move (! fsi64, ! "FsiAnyCPU.exe")
+                do! move (! fsi64 + ".config", ! "FsiAnyCPU.exe.config")
 
-    let installVsPlugin installer vsix =
-        let proc = Process.Start(installer, "/admin " + "\"" + vsix + "\"")
+                printfn "Uninstalling Visual Studio Plugin..."
 
-        async { while not proc.HasExited do do! Async.Sleep 200 } |> Async.RunSynchronously
+                // uninstall plugin
+                do unInstallVsPlugin vsixInstaller appGuid
+            } |> Reversible.run
 
-    let unInstallVsPlugin installer (guid : string) =
-        let proc = Process.Start(installer, "/admin " + "\"/u:" + guid + "\"")
-
-        async { while not proc.HasExited do do! Async.Sleep 200 } |> Async.RunSynchronously
 
     let parseMode (args : string []) =
         let usageAndExit () =
@@ -149,8 +185,7 @@
     let main args =
 
         let thisDirectory = System.Reflection.Assembly.GetEntryAssembly().Location |> Path.GetDirectoryName
-        let fsiProxy = Path.Combine(thisDirectory, "CustomFsi.Proxy.exe")
-        let vsix = Path.Combine(thisDirectory, "CustomFsi.vsix")
+        let settings = SettingsResolver.OfSettingsId("VS2013")
 
         let installOrUninstall = parseMode args
 
@@ -161,31 +196,38 @@
                 printfn "Press any key to continue..."
                 System.Console.ReadLine() |> ignore
 
-                if not <| File.Exists fsiProxy then
-                    eprintfn "Error: FsiProxy.exe not found."
-                    exitWait 3
+                install thisDirectory settings
 
-                if not <| File.Exists vsix then
-                    eprintfn "Error: CustomFsi.vsix not found."
-                    exitWait 3
-
-                printfn "Installing F# interactive proxy..." ; install fsiProxy
-
-                match vsixInstaller.Value with
-                | None ->
-                    eprintfn "Could not locate Visual Studio 2013, will not install plugin."
-                | Some installer ->
-                    printfn "Installing Visual Studio Plugin..."
-                    installVsPlugin installer vsix
+//                if not <| File.Exists fsiProxy then
+//                    eprintfn "Error: FsiProxy.exe not found."
+//                    exitWait 3
+//
+//                if not <| File.Exists vsix then
+//                    eprintfn "Error: CustomFsi.vsix not found."
+//                    exitWait 3
+//
+//                printfn "Installing F# interactive proxy..." ; install fsiProxy
+//
+//                match vsixInstaller.Value with
+//                | None ->
+//                    eprintfn "Could not locate Visual Studio 2013, will not install plugin."
+//                | Some installer ->
+//                    printfn "Installing Visual Studio Plugin..."
+//                    installVsPlugin installer vsix
             else
-                printfn "Removing F# interactive proxy..." ; uninstall ()
+                printfn "This will uninstall CustomFsi from your system."
+                printfn "Press any key to continue..."
+                System.Console.ReadLine() |> ignore
 
-                match vsixInstaller.Value with
-                | None ->
-                    eprintfn "Could not locate Visual Studio 2013, will not install plugin."
-                | Some installer ->
-                    printfn "Uninstalling Visual Studio Plugin..."
-                    unInstallVsPlugin installer resolver.AppGuid
+                uninstall settings
+//                printfn "Removing F# interactive proxy..." ; uninstall ()
+
+//                match vsixInstaller.Value with
+//                | None ->
+//                    eprintfn "Could not locate Visual Studio 2013, will not install plugin."
+//                | Some installer ->
+//                    printfn "Uninstalling Visual Studio Plugin..."
+//                    unInstallVsPlugin installer resolver.AppGuid
 
         with e -> eprintfn "Error: %s" e.Message ; exitWait 2
 

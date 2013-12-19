@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
 
-namespace Nessos.CustomFsi.VsPlugin
+namespace Nessos.CustomFsi.Vs2013
 {
     /// <summary>
     /// This class implements the tool window exposed by this package and hosts a user control.

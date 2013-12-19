@@ -3,13 +3,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nessos.CustomFsi.VsPlugin", "Nessos.CustomFsi.VsPlugin\Nessos.CustomFsi.VsPlugin.csproj", "{B8530802-E17B-4832-8F47-3E1ED6261516}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nessos.CustomFsi.Vs2013", "Nessos.CustomFsi.Vs2013\Nessos.CustomFsi.Vs2013.csproj", "{B8530802-E17B-4832-8F47-3E1ED6261516}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nessos.CustomFsi.VsPlugin_IntegrationTests", "Nessos.CustomFsi.VsPlugin\Nessos.CustomFsi_IntegrationTests\Nessos.CustomFsi.VsPlugin_IntegrationTests.csproj", "{03D029B3-D564-44EC-8FFA-10B867DFC543}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nessos.CustomFsi.Vs2013_IntegrationTests", "Nessos.CustomFsi.Vs2013\Nessos.CustomFsi_IntegrationTests\Nessos.CustomFsi.Vs2013_IntegrationTests.csproj", "{03D029B3-D564-44EC-8FFA-10B867DFC543}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A29F39E6-1EFF-4A42-AD15-DB9A1F052564}"
 	ProjectSection(SolutionItems) = preProject
 		IntegrationTests.testsettings = IntegrationTests.testsettings
+		Common\Key.snk = Common\Key.snk
 	EndProjectSection
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nessos.CustomFsi.Lib", "Nessos.CustomFSI.Lib\Nessos.CustomFsi.Lib.fsproj", "{24151889-B164-4DDE-8B8D-605BF931266C}"

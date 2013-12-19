@@ -17,7 +17,7 @@ using Nessos.CustomFsi.Lib;
 
 using Microsoft.Win32;
 
-namespace Nessos.CustomFsi.VsPlugin
+namespace Nessos.CustomFsi.Vs2013
 {
     /// <summary>
     /// Interaction logic for MyControl.xaml

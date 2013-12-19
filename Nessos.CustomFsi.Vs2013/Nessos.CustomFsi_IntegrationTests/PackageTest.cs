@@ -1,17 +1,20 @@
 ﻿using System;
-using System.ComponentModel.Design;
+using System.Text;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.VisualStudio.OLE.Interop;
+using Microsoft.VSSDK.Tools.VsIdeTesting;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VsSDK.IntegrationTestLibrary;
-using Microsoft.VSSDK.Tools.VsIdeTesting;
+using EnvDTE;
 
 namespace Nessos.CustomFsi.VsPlugin_IntegrationTests
 {
-
-    [TestClass()]
-    public class ToolWindowTest
+    /// <summary>
+    /// Integration test for package validation
+    /// </summary>
+    [TestClass]
+    public class PackageTest
     {
         private delegate void ThreadInvoker();
 
@@ -33,24 +36,24 @@ namespace Nessos.CustomFsi.VsPlugin_IntegrationTests
             }
         }
 
-        /// <summary>
-        ///A test for showing the toolwindow
-        ///</summary>
-        [TestMethod()]
+        [TestMethod]
         [HostType("VS IDE")]
-        public void ShowToolWindow()
+        public void PackageLoadTest()
         {
             UIThreadInvoker.Invoke((ThreadInvoker)delegate()
             {
-                CommandID toolWindowCmd = new CommandID(Nessos.CustomFsi.VsPlugin.GuidList.guidNessos_CustomFSICmdSet, (int)Nessos.CustomFsi.VsPlugin.PkgCmdIDList.CustomFSI);
 
-                TestUtils testUtils = new TestUtils();
-                testUtils.ExecuteCommand(toolWindowCmd);
+                //Get the Shell Service
+                IVsShell shellService = VsIdeTestHostContext.ServiceProvider.GetService(typeof(SVsShell)) as IVsShell;
+                Assert.IsNotNull(shellService);
 
-                Assert.IsTrue(testUtils.CanFindToolwindow(new Guid((Nessos.CustomFsi.VsPlugin.GuidList.guidToolWindowPersistanceString))));
+                //Validate package load
+                IVsPackage package;
+                Guid packageGuid = new Guid(Nessos.CustomFsi.Vs2013.GuidList.guidNessos_CustomFSIPkgString);
+                Assert.IsTrue(0 == shellService.LoadPackage(ref packageGuid, out package));
+                Assert.IsNotNull(package, "Package failed to load");
 
             });
         }
-
     }
 }
