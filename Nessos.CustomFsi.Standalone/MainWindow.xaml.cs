@@ -27,17 +27,42 @@ namespace StandalonePlugin
         {
             InitializeComponent();
 
-            // Apply
-            this.Settings = SettingsResolver.OfSettingsId("VS2013");
+            this.AllSettings = SettingsResolver
+                                    .GetAllConfigurations()
+                                    .Where(x => x.IsPluginInstalled)
+                                    .ToArray();
+
+            foreach (var config in this.AllSettings)
+            {
+                this.VersionSelection.Items.Add(config.Name);
+            }
+
+            if (this.AllSettings.Length > 0)
+                this.VersionSelection.SelectedIndex = 0;
+                this.Settings = this.AllSettings[0];
+            
             this.SetRegistryValues();
+
+            this.VersionSelection.SelectionChanged += changeSelection;
         }
 
         private SettingsResolver Settings;
+        private SettingsResolver[] AllSettings;
+
+        private void changeSelection(object sender, EventArgs e)
+        {
+            this.Settings = this.AllSettings[((ComboBox) sender).SelectedIndex];
+
+            SetRegistryValues();
+        }
 
         private void SetRegistryValues()
         {
-            this.FsiPath.Text = this.Settings.CustomFsiPath;
-            this.FsiEnabled.IsChecked = this.Settings.CustomFsiEnabled;
+            if (this.Settings != null)
+            {
+                this.FsiPath.Text = this.Settings.CustomFsiPath;
+                this.FsiEnabled.IsChecked = this.Settings.CustomFsiEnabled;
+            }
         }
 
         private void commit(object sender, RoutedEventArgs e)

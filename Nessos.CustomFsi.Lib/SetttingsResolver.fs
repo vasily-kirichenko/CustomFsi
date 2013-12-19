@@ -85,7 +85,7 @@
                 CustomPath = pluginKey.GetField("Path")
             }
 
-        let allSettings = [vs2012 ; vs2013]
+        let allSettings = [vs2013 ; vs2012]
 
         let tryGetSettingsById (id : string) =
             allSettings |> List.tryFind (fun s -> s.Id = id)
