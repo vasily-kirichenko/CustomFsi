@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nessos.CustomFsi.Lib", "Nessos.CustomFsi.Lib\Nessos.CustomFsi.Lib.fsproj", "{24151889-B164-4DDE-8B8D-605BF931266C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nessos.CustomFsi.Vs2012", "Nessos.CustomFsi.Vs2012\Nessos.CustomFsi.Vs2012.csproj", "{00EBAC85-44C1-46A9-8A05-761E6FF94F60}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nessos.CustomFsi.Vs2012_IntegrationTests", "Nessos.CustomFsi.Vs2012\Vs2012_IntegrationTests\Nessos.CustomFsi.Vs2012_IntegrationTests.csproj", "{AC3EE261-6A61-42E7-985D-05A8B8F115A3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{24151889-B164-4DDE-8B8D-605BF931266C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24151889-B164-4DDE-8B8D-605BF931266C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24151889-B164-4DDE-8B8D-605BF931266C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24151889-B164-4DDE-8B8D-605BF931266C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00EBAC85-44C1-46A9-8A05-761E6FF94F60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00EBAC85-44C1-46A9-8A05-761E6FF94F60}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00EBAC85-44C1-46A9-8A05-761E6FF94F60}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00EBAC85-44C1-46A9-8A05-761E6FF94F60}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC3EE261-6A61-42E7-985D-05A8B8F115A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC3EE261-6A61-42E7-985D-05A8B8F115A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC3EE261-6A61-42E7-985D-05A8B8F115A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC3EE261-6A61-42E7-985D-05A8B8F115A3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
