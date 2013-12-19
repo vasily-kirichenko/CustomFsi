@@ -133,6 +133,9 @@
 
                 // install the plugin
                 do installVsPlugin vsixInstaller vsix
+
+                do settings.SetPluginInstallationStatus(true)
+
             } |> Reversible.run
 
         let uninstall (settings : SettingsResolver) =
@@ -164,6 +167,8 @@
 
                 // uninstall plugin
                 do unInstallVsPlugin vsixInstaller appGuid
+
+                do settings.SetPluginInstallationStatus(false)
             } |> Reversible.run
 
 
@@ -181,53 +186,69 @@
             | _ -> usageAndExit ()
 
 
+    let promptSelection (candidates : SettingsResolver list) =
+        let selections = Array.init candidates.Length (fun _ -> false)
+        let rec printSel () =
+            printfn "Identified the following targets:"
+            candidates |> List.iteri (fun i t -> printfn "    [%s] %d. %s" (if selections.[i] then "x" else " ") (i+1) t.Name)
+            printf "Toggle (1-%d) (or '*' or 'done') [done] " selections.Length
+            match System.Console.ReadLine().Trim().ToLower() with
+            | "" | "done" -> ()
+            | "*" -> 
+                for i = 0 to selections.Length - 1 do selections.[i] <- true
+                printSel ()
+            | msg ->
+                let success,i = System.Int32.TryParse msg
+                if success && i > 0 && i <= selections.Length then
+                    selections.[i-1] <- not selections.[i-1]
+                else
+                    eprintfn "parse error."
+
+                printSel ()
+
+        printSel ()
+
+        (selections,candidates)
+        ||> Seq.zip
+        |> Seq.filter fst
+        |> Seq.map snd
+        |> Seq.toList
+
+
     [<EntryPoint>]
     let main args =
 
         let thisDirectory = System.Reflection.Assembly.GetEntryAssembly().Location |> Path.GetDirectoryName
-        let settings = SettingsResolver.OfSettingsId("VS2013")
 
         let installOrUninstall = parseMode args
 
         try
             if installOrUninstall then
                 printfn "This will install a stream proxy in over your installed FSI executables."
-                printfn "It will also install the CustomFsi Visual Studio 2013 Plugin."
+                printfn "It will also install the CustomFsi Visual Studio 2012/2013 Plugin."
                 printfn "Press any key to continue..."
                 System.Console.ReadLine() |> ignore
 
-                install thisDirectory settings
+                match SettingsResolver.GetAllConfigurations() |> List.filter(fun s -> s.IsVisualStudioInstalled && not s.IsPluginInstalled) with
+                | [] -> eprintfn "No Visual Studio installations found or plugin already installed."
+                | targets ->
+                    let chosen = promptSelection targets
 
-//                if not <| File.Exists fsiProxy then
-//                    eprintfn "Error: FsiProxy.exe not found."
-//                    exitWait 3
-//
-//                if not <| File.Exists vsix then
-//                    eprintfn "Error: CustomFsi.vsix not found."
-//                    exitWait 3
-//
-//                printfn "Installing F# interactive proxy..." ; install fsiProxy
-//
-//                match vsixInstaller.Value with
-//                | None ->
-//                    eprintfn "Could not locate Visual Studio 2013, will not install plugin."
-//                | Some installer ->
-//                    printfn "Installing Visual Studio Plugin..."
-//                    installVsPlugin installer vsix
+                    for setting in chosen do
+                        install thisDirectory setting
+
             else
                 printfn "This will uninstall CustomFsi from your system."
                 printfn "Press any key to continue..."
                 System.Console.ReadLine() |> ignore
 
-                uninstall settings
-//                printfn "Removing F# interactive proxy..." ; uninstall ()
+                match SettingsResolver.GetAllConfigurations() |> List.filter(fun s -> s.IsPluginInstalled) with
+                | [] -> printfn "Nothing to uninstall."
+                | targets ->
+                    let chosen = promptSelection targets
 
-//                match vsixInstaller.Value with
-//                | None ->
-//                    eprintfn "Could not locate Visual Studio 2013, will not install plugin."
-//                | Some installer ->
-//                    printfn "Uninstalling Visual Studio Plugin..."
-//                    unInstallVsPlugin installer resolver.AppGuid
+                    for setting in chosen do
+                        uninstall setting
 
         with e -> eprintfn "Error: %s" e.Message ; exitWait 2
 

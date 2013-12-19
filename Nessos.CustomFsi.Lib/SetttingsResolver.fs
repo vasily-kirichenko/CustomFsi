@@ -13,6 +13,7 @@
         type VisualStudioKeys =
             {
                 Id : string
+                Name : string
                 PluginGuid : string
                 VsixFile : string
 
@@ -27,7 +28,7 @@
                 FSharpPath : FsRegistryField<string>
 
                 // Plugin Settings
-
+                PluginInstalled : FsRegistryField<bool>
                 PluginEnabled : FsRegistryField<bool>
                 CustomPath : FsRegistryField<string>
             }
@@ -43,6 +44,7 @@
             let pluginKey = customFsiKey.GetSubKey "VS2013"
             {
                 Id = "VS2013"
+                Name = "Visual Studio 2013 / F# 3.1"
                 PluginGuid = "adff2b7c-9847-421c-9598-b378536cc3c4"
                 VsixFile = "CustomFsi.Vs2013.vsix"
 
@@ -52,6 +54,7 @@
 
                 FSharpPath = fsKey.GetField()
 
+                PluginInstalled = customFsiKey.GetField("VS2013")
                 PluginEnabled = pluginKey.GetField("Enabled")
                 CustomPath = pluginKey.GetField("Path")
             }
@@ -67,6 +70,7 @@
             let pluginKey = customFsiKey.GetSubKey "VS2012"
             {
                 Id = "VS2012"
+                Name = "Visual Studio 2012 / F# 3.0"
                 PluginGuid = "9cf2e4d2-fa2e-4e55-9af0-185783ea2dc7"
                 VsixFile = "CustomFsi.Vs2012.vsix"
 
@@ -76,23 +80,24 @@
 
                 FSharpPath = fsKey.GetField()
 
+                PluginInstalled = customFsiKey.GetField("VS2012")
                 PluginEnabled = pluginKey.GetField("Enabled")
                 CustomPath = pluginKey.GetField("Path")
             }
 
-        let settings = [vs2012 ; vs2013]
+        let allSettings = [vs2012 ; vs2013]
 
         let tryGetSettingsById (id : string) =
-            settings |> List.tryFind (fun s -> s.Id = id)
+            allSettings |> List.tryFind (fun s -> s.Id = id)
 
         let tryGetSettingsByCompilerPath (path : string) =
             let normalizePath (path : string) = Path.GetFullPath(path).TrimEnd([|'\\'|])
                 
-            settings 
+            allSettings 
             |> List.tryFind(fun s -> FsRegistry.TryGetValue s.FSharpPath |> Option.exists(fun p -> normalizePath path = normalizePath p))
 
         let pickMostSuitableConfiguration () =
-            settings
+            allSettings
             |> List.tryFind(fun s -> FsRegistry.Exists(s.VisualStudioPath))
             |> fun x -> defaultArg x vs2013
 
@@ -129,3 +134,10 @@
         
         member __.AppGuid = settings.PluginGuid
         member __.VsixFile = settings.VsixFile
+        member __.Name = settings.Name
+
+        member __.IsVisualStudioInstalled = (evaluate settings.FSharpPath).IsSome && (evaluate settings.VisualStudioPath).IsSome
+        member __.IsPluginInstalled =  settings.PluginInstalled |> evaluate |> defaultArg false
+        member __.SetPluginInstallationStatus (status : bool) = FsRegistry.SetValue(settings.PluginInstalled, status, overwrite = true)
+
+        static member GetAllConfigurations () = allSettings |> List.map (fun s -> SettingsResolver(s))
