@@ -97,6 +97,7 @@
     <PostBuildEvent>md "$(ProjectDir)..\$(ConfigurationName)\"
 del "$(ProjectDir)..\$(ConfigurationName)\*"
 copy "$(ProjectDir)..\Nessos.CustomFsi.Vs2013\$(OutDir)*.vsix" "$(ProjectDir)..\$(ConfigurationName)"
+copy "$(ProjectDir)..\Nessos.CustomFsi.Vs2012\$(OutDir)*.vsix" "$(ProjectDir)..\$(ConfigurationName)"
 copy "$(TargetDir)*.exe" "$(ProjectDir)..\$(ConfigurationName)\"
 copy "$(TargetDir)*.dll" "$(ProjectDir)..\$(ConfigurationName)\"
 copy "$(TargetDir)*.txt" "$(ProjectDir)..\$(ConfigurationName)\"
