@@ -8,11 +8,13 @@
     <ProjectGuid>3e34bf08-e094-4173-931b-d13bbd9a31c1</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>Nessos.CustomFsi.Installer</RootNamespace>
-    <AssemblyName>Installer</AssemblyName>
+    <AssemblyName>CustomFsi.Installer</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFSharpCoreVersion>4.3.0.0</TargetFSharpCoreVersion>
     <Name>Nessos.CustomFsi.Installer</Name>
+    <Win32Resource>
+    </Win32Resource>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -25,6 +27,8 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DocumentationFile>bin\Debug\Nessos.CustomFsi.Installer.XML</DocumentationFile>
     <Prefer32Bit>true</Prefer32Bit>
+    <StartArguments>
+    </StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -63,6 +67,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="manifest.xml" />
+    <Content Include="mbrace.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nessos.CustomFsi.Proxy\Nessos.CustomFsi.Proxy.fsproj">
@@ -80,6 +87,9 @@
       <Project>{b8530802-e17b-4832-8f47-3e1ed6261516}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <Reference Include="InstallUtils">
+      <HintPath>..\Common\InstallUtils.dll</HintPath>
+    </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <Private>True</Private>
@@ -93,6 +103,17 @@
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="Windows Script Host Object Model">
+      <Guid>{f935dc20-1cf0-11d0-adb9-00c04fd58a0b}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <Isolated>False</Isolated>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Private>True</Private>
+    </COMReference>
+  </ItemGroup>
   <PropertyGroup>
     <PostBuildEvent>md "$(ProjectDir)..\$(ConfigurationName)\"
 del "$(ProjectDir)..\$(ConfigurationName)\*"
@@ -101,6 +122,7 @@ copy "$(ProjectDir)..\Nessos.CustomFsi.Vs2012\$(OutDir)*.vsix" "$(ProjectDir)..\
 copy "$(TargetDir)*.exe" "$(ProjectDir)..\$(ConfigurationName)\"
 copy "$(TargetDir)*.dll" "$(ProjectDir)..\$(ConfigurationName)\"
 copy "$(TargetDir)*.txt" "$(ProjectDir)..\$(ConfigurationName)\"
+copy "$(TargetDir)*.ico" "$(ProjectDir)..\$(ConfigurationName)\"
 copy "$(TargetDir)*.bat" "$(ProjectDir)..\$(ConfigurationName)\"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

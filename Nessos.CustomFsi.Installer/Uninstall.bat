@@ -5,4 +5,4 @@
 set current=%CD%s
 
 @echo off
-start .\Installer.exe --uninstall
+start .\CustomFsi.Installer.exe --uninstall
