@@ -64,7 +64,14 @@
             | path when not <| Directory.Exists path -> failwith "F# interactive path does not exist."
             | path -> path
 
-        let isInstalled (fsiPath : string) =
+        let isInstalled (settings : SettingsResolver) =
+            let fsiPath = settings.FSharpCompilerPath
+            let inline (!) file = Path.Combine(fsiPath, file)
+            [ ! fsi32 ; ! fsi64 ] |> List.exists File.Exists
+
+        /// check state of F# compiler directory; fail if inconsistent.
+        /// return true if installed, false otherwise
+        let checkInstallationState (fsiPath : string) =
             let inline (!) file = Path.Combine(fsiPath, file)
             let status = 
                 [ ! fsi32 ; ! fsi32 + ".config" ; ! fsi64 ; ! fsi64 + ".config" ]
@@ -96,6 +103,7 @@
         let install (sourceDir : string) (settings : SettingsResolver) =
 
             // preparation
+            
             let fsiProxyPath = Path.Combine(sourceDir, "CustomFsi.Proxy.exe")
             let vsix = Path.Combine(sourceDir, settings.VsixFile)
             let vsixInstaller = resolveVsixInstaller settings
@@ -108,7 +116,7 @@
 
             let fsiPath = resolveCompilerPath settings
 
-            if isInstalled fsiPath then failwith "F# interactive proxy appears to have already been installed."
+            if checkInstallationState fsiPath then failwith "F# interactive proxy appears to have already been installed."
 
             do checkForWritePermissions fsiPath
 
@@ -143,7 +151,7 @@
             let vsixInstaller = resolveVsixInstaller settings
             let appGuid = settings.AppGuid
 
-            if not <| isInstalled fsiPath then failwith "F# interactive proxy appears to have not been installed."
+            if not <| checkInstallationState fsiPath then failwith "F# interactive proxy appears to have not been installed."
 
             do checkForWritePermissions fsiPath
 
@@ -191,7 +199,7 @@
         let rec printSel () =
             printfn "Identified the following targets:"
             candidates |> List.iteri (fun i t -> printfn "    [%s] %d. %s" (if selections.[i] then "x" else " ") (i+1) t.Name)
-            printf "Toggle (1-%d) (or '*' or 'done') [done] " selections.Length
+            printf "Toggle an option (1-%d) (or '*' or 'done') [done] " selections.Length
             match System.Console.ReadLine().Trim().ToLower() with
             | "" | "done" -> ()
             | "*" -> 
@@ -229,7 +237,7 @@
                 printfn "Press any key to continue..."
                 System.Console.ReadLine() |> ignore
 
-                match SettingsResolver.GetAllConfigurations() |> List.filter(fun s -> s.IsVisualStudioInstalled && not s.IsPluginInstalled) with
+                match SettingsResolver.GetAllConfigurations() |> List.filter(fun s -> s.IsVisualStudioInstalled && not <| isInstalled s) with
                 | [] -> eprintfn "No Visual Studio installations found or plugin already installed."
                 | targets ->
                     let chosen = promptSelection targets
@@ -242,7 +250,7 @@
                 printfn "Press any key to continue..."
                 System.Console.ReadLine() |> ignore
 
-                match SettingsResolver.GetAllConfigurations() |> List.filter(fun s -> s.IsPluginInstalled) with
+                match SettingsResolver.GetAllConfigurations() |> List.filter (fun s -> s.IsVisualStudioInstalled &&  isInstalled s) with
                 | [] -> printfn "Nothing to uninstall."
                 | targets ->
                     let chosen = promptSelection targets
